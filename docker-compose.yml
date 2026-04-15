@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - "9000:9000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=pro_api
+      - DB_USERNAME=root
+      - DB_PASSWORD=password
+    depends_on:
+      - db
+    networks:
+      - pro_network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - pro_network
+
+  db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: pro_api
+    volumes:
+      - dbvolume:/var/lib/mysql
+    networks:
+      - pro_network
+
+volumes:
+  dbvolume:
+
+networks:
+  pro_network:
+    driver: bridge
